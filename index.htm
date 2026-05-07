@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام تصنيع: صور كاملة وبيانات واضحة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans Arabic', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        .custom-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        #finalCanvas {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- شريط التنقل -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2.5 rounded-xl text-white">
+                    <i class="fas fa-industry text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-slate-900">نظام <span class="text-blue-600">الإنتاج</span></h1>
+                    <p class="text-[10px] font-bold text-slate-400">إدارة القياسات الدقيقة</p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('fileInput').click()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-100 transition-all">
+                <i class="fas fa-plus ml-2"></i>إضافة صور
+            </button>
+            <input type="file" id="fileInput" class="hidden" multiple accept="image/*">
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- لوحة التحكم الجانبية -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 custom-shadow">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="font-bold text-lg text-slate-700">قائمة المنتجات</h2>
+                        <button onclick="clearItems()" class="text-red-500 hover:text-red-700 text-xs font-bold">مسح الكل</button>
+                    </div>
+
+                    <div id="sidebarList" class="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+                        <div id="emptyState" class="py-12 text-center text-slate-400 border-2 border-dashed border-slate-100 rounded-2xl">
+                            <i class="fas fa-images text-4xl mb-3 opacity-20"></i>
+                            <p class="text-xs">لا توجد صور حالياً</p>
+                        </div>
+                    </div>
+
+                    <div id="actionContainer" class="hidden mt-6 pt-6 border-t border-slate-100">
+                        <button onclick="generateGrid()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl">
+                            <i class="fas fa-layer-group"></i>توليد وثيقة مجمعة
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- منطقة المعاينة -->
+            <div class="lg:col-span-8">
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 custom-shadow min-h-[600px] flex flex-col relative">
+                    <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
+                        <h2 class="font-bold text-lg flex items-center gap-2">
+                            <i class="fas fa-eye text-blue-600"></i>معاينة النتيجة
+                        </h2>
+                        
+                        <div id="exportBtns" class="hidden flex items-center gap-2">
+                            <button onclick="downloadAsPNG()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all">
+                                <i class="fas fa-image"></i>حفظ PNG
+                            </button>
+                            <button onclick="downloadAsPDF()" class="bg-blue-50 text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border border-blue-100 transition-all">
+                                <i class="fas fa-file-pdf"></i>حفظ PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="canvasBox" class="flex-grow flex items-center justify-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100 p-4 relative overflow-auto">
+                        <p id="placeholderText" class="text-slate-300 text-sm italic">سيظهر التصميم المجمع هنا بعد التوليد</p>
+                        <canvas id="finalCanvas" class="hidden"></canvas>
+                        
+                        <div id="loadingUI" class="hidden absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-20">
+                            <div class="loader mb-4"></div>
+                            <p class="font-bold text-slate-600">جاري معالجة الصور بالكامل...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white px-6 py-3 rounded-2xl shadow-2xl opacity-0 transform translate-y-10 transition-all z-50"></div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+        let jobList = [];
+        const fileInput = document.getElementById('fileInput');
+        const sidebarList = document.getElementById('sidebarList');
+        const emptyState = document.getElementById('emptyState');
+        const actionContainer = document.getElementById('actionContainer');
+        const canvas = document.getElementById('finalCanvas');
+        const ctx = canvas.getContext('2d');
+        const exportBtns = document.getElementById('exportBtns');
+        const loadingUI = document.getElementById('loadingUI');
+        const placeholderText = document.getElementById('placeholderText');
+
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            files.forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    jobList.push({
+                        id: Date.now() + Math.random(),
+                        name: file.name,
+                        data: event.target.result,
+                        qty: 1,
+                        size: ""
+                    });
+                    renderSidebar();
+                };
+                reader.readAsDataURL(file);
+            });
+            fileInput.value = '';
+        });
+
+        function renderSidebar() {
+            if (jobList.length > 0) {
+                emptyState.classList.add('hidden');
+                actionContainer.classList.remove('hidden');
+            } else {
+                emptyState.classList.remove('hidden');
+                actionContainer.classList.add('hidden');
+            }
+
+            sidebarList.innerHTML = jobList.map(item => `
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-3">
+                    <div class="flex items-center gap-3">
+                        <img src="${item.data}" class="w-14 h-14 object-cover rounded-lg border border-white shadow-sm">
+                        <div class="flex-grow min-w-0">
+                            <p class="text-[10px] font-bold text-slate-400 truncate">${item.name}</p>
+                            <button onclick="removeJob(${item.id})" class="text-red-400 hover:text-red-600 text-[10px] font-bold">حذف المنتج</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[9px] font-black text-slate-500 block mb-1">الكمية</label>
+                            <input type="number" value="${item.qty}" onchange="updateJob(${item.id}, 'qty', this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-black text-slate-500 block mb-1 text-blue-600">القياس (سم)</label>
+                            <input type="text" placeholder="مثال: 50\\70" value="${item.size}" onchange="updateJob(${item.id}, 'size', this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateJob(id, key, val) {
+            const item = jobList.find(i => i.id === id);
+            if (item) {
+                if (key === 'qty') item.qty = val;
+                if (key === 'size') item.size = val;
+            }
+        }
+
+        function removeJob(id) {
+            jobList = jobList.filter(i => i.id !== id);
+            renderSidebar();
+            resetView();
+        }
+
+        function clearItems() {
+            if(confirm("إفراغ القائمة بالكامل؟")) {
+                jobList = [];
+                renderSidebar();
+                resetView();
+            }
+        }
+
+        function resetView() {
+            canvas.classList.add('hidden');
+            placeholderText.classList.remove('hidden');
+            exportBtns.classList.add('hidden');
+        }
+
+        async function generateGrid() {
+            if (jobList.length === 0) return;
+
+            loadingUI.classList.remove('hidden');
+            placeholderText.classList.add('hidden');
+            canvas.classList.add('hidden');
+            exportBtns.classList.add('hidden');
+
+            try {
+                // عمودين لرؤية واضحة جداً
+                const cols = jobList.length >= 2 ? 2 : 1;
+                const rows = Math.ceil(jobList.length / cols);
+                
+                const imgCellSize = 1000; // مساحة الصورة
+                const headerHeight = 220; // مساحة البيانات
+                const padding = 60;
+
+                canvas.width = (cols * imgCellSize) + ((cols + 1) * padding);
+                canvas.height = (rows * (imgCellSize + headerHeight)) + ((rows + 1) * padding);
+
+                // خلفية بيضاء
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (let i = 0; i < jobList.length; i++) {
+                    const item = jobList[i];
+                    const img = await loadImage(item.data);
+                    
+                    const col = i % cols;
+                    const row = Math.floor(i / cols);
+                    
+                    const x = padding + col * (imgCellSize + padding);
+                    const y = padding + row * (imgCellSize + headerHeight + padding);
+
+                    // 1. رسم خلفية البيانات (بشكل أوضح)
+                    ctx.fillStyle = "#1e293b";
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, imgCellSize, headerHeight, 20);
+                    ctx.fill();
+
+                    // النص اليمين (الكمية)
+                    ctx.textAlign = "right";
+                    ctx.fillStyle = "#94a3b8";
+                    ctx.font = "bold 35px 'Noto Sans Arabic', sans-serif";
+                    ctx.fillText("الكمية المطلوبة:", x + imgCellSize - 50, y + 60);
+                    
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "900 110px 'Noto Sans Arabic', sans-serif";
+                    ctx.fillText(item.qty, x + imgCellSize - 50, y + 160);
+
+                    // النص اليسار (القياس)
+                    ctx.textAlign = "left";
+                    ctx.fillStyle = "#94a3b8";
+                    ctx.font = "bold 35px 'Noto Sans Arabic', sans-serif";
+                    ctx.fillText("القياس المطلوب (سم):", x + 50, y + 60);
+                    
+                    ctx.fillStyle = "#38bdf8"; // لون سماوي مميز للقياس
+                    ctx.font = "900 90px 'Noto Sans Arabic', sans-serif";
+                    const sizeTxt = item.size.replace(/x/g, '\\');
+                    ctx.fillText(sizeTxt || "---", x + 50, y + 160);
+
+                    // 2. رسم الصورة (بدون قص - تظهر كاملة)
+                    // نرسم خلفية فاتحة جداً لمنطقة الصورة
+                    ctx.fillStyle = "#f8fafc";
+                    ctx.fillRect(x, y + headerHeight + 10, imgCellSize, imgCellSize);
+                    
+                    drawFullImage(ctx, img, x, y + headerHeight + 10, imgCellSize, imgCellSize);
+                }
+
+                setTimeout(() => {
+                    loadingUI.classList.add('hidden');
+                    canvas.classList.remove('hidden');
+                    exportBtns.classList.remove('hidden');
+                    showToast("تم توليد الوثيقة بنجاح");
+                }, 1000);
+
+            } catch (err) {
+                console.error(err);
+                loadingUI.classList.add('hidden');
+                showToast("حدث خطأ أثناء معالجة الصور");
+            }
+        }
+
+        function loadImage(src) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.src = src;
+            });
+        }
+
+        // وظيفة رسم الصورة كاملة (Contain)
+        function drawFullImage(ctx, img, x, y, w, h) {
+            const imgRatio = img.width / img.height;
+            const containerRatio = w / h;
+            
+            let drawW, drawH;
+
+            if (imgRatio > containerRatio) {
+                // الصورة عريضة جداً
+                drawW = w;
+                drawH = w / imgRatio;
+            } else {
+                // الصورة طولية جداً
+                drawH = h;
+                drawW = h * imgRatio;
+            }
+
+            // حساب التوسيط داخل المربع
+            const offX = x + (w - drawW) / 2;
+            const offY = y + (h - drawH) / 2;
+
+            ctx.drawImage(img, offX, offY, drawW, drawH);
+        }
+
+        function downloadAsPNG() {
+            const link = document.createElement('a');
+            link.download = `طلب_انتاج_${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+        }
+
+        function downloadAsPDF() {
+            const imgData = canvas.toDataURL('image/png', 1.0);
+            const orientation = canvas.width > canvas.height ? 'l' : 'p';
+            const pdf = new jsPDF({
+                orientation: orientation,
+                unit: 'px',
+                format: [canvas.width, canvas.height]
+            });
+            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+            pdf.save(`وثيقة_تصنيع_${Date.now()}.pdf`);
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.replace('opacity-0', 'opacity-100');
+            t.classList.replace('translate-y-10', 'translate-y-0');
+            setTimeout(() => {
+                t.classList.replace('opacity-100', 'opacity-0');
+                t.classList.replace('translate-y-0', 'translate-y-10');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
