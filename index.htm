@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام تصنيع: وثائق A4 (PDF & JPG)</title>
+    <title>Fusionner Images - تجميع الصور الاحترافي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -16,24 +16,24 @@
         }
 
         .custom-shadow {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
         }
 
         #finalCanvas {
             max-width: 100%;
             height: auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            border-radius: 12px;
             background: white;
+            display: block;
         }
 
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #2563eb;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+            width: 45px;
+            height: 45px;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
@@ -42,25 +42,26 @@
         }
 
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="text-slate-800">
 
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="bg-blue-600 p-2.5 rounded-xl text-white shadow-lg shadow-blue-200">
-                    <i class="fas fa-print text-xl"></i>
+                <div class="bg-blue-600 p-2.5 rounded-2xl text-white shadow-lg">
+                    <i class="fas fa-layer-group text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-black text-slate-900">نظام <span class="text-blue-600">التجميع الذكي</span></h1>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">A4 PDF & JPG Multipage System</p>
+                    <h1 class="text-xl font-black text-slate-900 tracking-tight">Fusionner <span class="text-blue-600">Images</span></h1>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">نظام تجميع 6 صور | A4</p>
                 </div>
             </div>
-            <button onclick="document.getElementById('fileInput').click()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-100 transition-all active:scale-95">
-                <i class="fas fa-cloud-upload-alt ml-2"></i>إضافة صور للمشروع
+            <button onclick="document.getElementById('fileInput').click()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-100 transition-all active:scale-95 flex items-center gap-2">
+                <i class="fas fa-plus-circle"></i>إضافة صور جديدة
             </button>
             <input type="file" id="fileInput" class="hidden" multiple accept="image/*">
         </div>
@@ -69,55 +70,60 @@
     <main class="max-w-7xl mx-auto p-4 md:p-8">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
+            <!-- Sidebar -->
             <div class="lg:col-span-4 space-y-6">
                 <div class="bg-white rounded-3xl p-6 border border-slate-200 custom-shadow">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="font-bold text-lg text-slate-700 flex items-center gap-2">
-                            <i class="fas fa-list-ul text-blue-500"></i>
-                            قائمة الصور المختارة
+                            <i class="fas fa-list-check text-blue-500"></i>
+                            إدارة الصور (<span id="totalCount">0</span>)
                         </h2>
-                        <button onclick="clearItems()" class="text-red-500 hover:text-red-700 text-xs font-bold transition-colors">مسح القائمة</button>
+                        <button onclick="clearItems()" class="text-red-500 hover:bg-red-50 text-xs font-bold px-3 py-1 rounded-lg transition-colors">مسح الكل</button>
                     </div>
 
-                    <div id="sidebarList" class="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-                        <div id="emptyState" class="py-12 text-center text-slate-400 border-2 border-dashed border-slate-100 rounded-2xl">
-                            <i class="fas fa-images text-4xl mb-3 opacity-20"></i>
-                            <p class="text-xs">لم يتم اختيار أي صور بعد</p>
+                    <div id="sidebarList" class="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
+                        <div id="emptyState" class="py-16 text-center text-slate-400 border-2 border-dashed border-slate-100 rounded-3xl bg-slate-50">
+                            <i class="fas fa-cloud-arrow-up text-5xl mb-4 opacity-10"></i>
+                            <p class="text-xs font-medium">ابدأ بإضافة الصور هنا</p>
                         </div>
                     </div>
 
                     <div id="actionContainer" class="hidden mt-6 pt-6 border-t border-slate-100">
-                        <button onclick="processAndGenerate()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl">
-                            <i class="fas fa-magic"></i>توليد ومعاينة الوثيقة
+                        <button onclick="processAndGenerate()" class="w-full bg-slate-900 hover:bg-black text-white font-black py-4 rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl">
+                            <i class="fas fa-wand-magic-sparkles"></i>توليد الوثيقة النهائية
                         </button>
                     </div>
                 </div>
             </div>
 
+            <!-- Preview Area -->
             <div class="lg:col-span-8">
-                <div class="bg-white rounded-3xl p-6 border border-slate-200 custom-shadow min-h-[70vh] flex flex-col relative">
-                    <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 border-b border-slate-50 pb-4">
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 custom-shadow min-h-[75vh] flex flex-col relative">
+                    <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 border-b border-slate-100 pb-5">
                         <h2 class="font-bold text-lg flex items-center gap-2">
-                            <i class="fas fa-file-pdf text-red-500"></i>معاينة الطباعة (A4)
+                            <i class="fas fa-file-invoice text-blue-600"></i>معاينة الطباعة (A4)
                         </h2>
                         
                         <div id="exportBtns" class="hidden flex items-center gap-2">
-                            <button onclick="downloadAsJPG()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all">
-                                <i class="fas fa-image"></i>حفظ كصورة JPG
+                            <button onclick="downloadAsJPG()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all border border-slate-200">
+                                <i class="fas fa-image text-orange-500"></i>حفظ JPG
                             </button>
-                            <button onclick="downloadAsPDF()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-red-100 transition-all">
+                            <button onclick="downloadAsPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-100 transition-all">
                                 <i class="fas fa-file-pdf"></i>تحميل PDF
                             </button>
                         </div>
                     </div>
 
-                    <div id="canvasBox" class="flex-grow flex items-start justify-center bg-slate-50 rounded-2xl p-6 relative overflow-auto">
-                        <p id="placeholderText" class="text-slate-300 text-sm italic mt-20 text-center">سيتم تجميع كل 4 صور في صفحة A4 واحدة تلقائياً</p>
-                        <canvas id="finalCanvas" class="hidden custom-shadow"></canvas>
+                    <div id="canvasBox" class="flex-grow flex items-start justify-center bg-slate-50 rounded-2xl p-4 md:p-8 relative overflow-auto border-2 border-dashed border-slate-200">
+                        <div id="placeholderText" class="text-center mt-20">
+                            <div class="text-slate-300 text-7xl mb-4"><i class="fas fa-th-large"></i></div>
+                            <p class="text-slate-400 text-sm italic max-w-xs">سيتم عرض البيانات بوضوح أعلى كل صورة بنظام 6 صور لكل صفحة.</p>
+                        </div>
+                        <canvas id="finalCanvas" class="hidden shadow-2xl"></canvas>
                         
                         <div id="loadingUI" class="hidden absolute inset-0 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-20">
                             <div class="loader mb-4"></div>
-                            <p class="font-bold text-slate-600">جاري تنظيم الصفحات ومعالجة الصور...</p>
+                            <p class="font-bold text-slate-600">جاري معالجة وتجميع الصور...</p>
                         </div>
                     </div>
                 </div>
@@ -126,18 +132,21 @@
         </div>
     </main>
 
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-8 py-4 rounded-2xl shadow-2xl opacity-0 transform translate-y-10 transition-all z-50 pointer-events-none"></div>
+    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-8 py-4 rounded-2xl shadow-2xl opacity-0 transform translate-y-10 transition-all duration-300 z-50 pointer-events-none text-sm font-bold"></div>
 
     <script>
         const { jsPDF } = window.jspdf;
         let jobList = [];
         
+        // إعدادات A4
         const A4_WIDTH = 2480; 
         const A4_HEIGHT = 3508;
-        const PADDING = 80;
-        const CELL_W = (A4_WIDTH - (PADDING * 3)) / 2;
-        const CELL_H = (A4_HEIGHT - (PADDING * 3)) / 2;
-        const INFO_H = 250;
+        const PADDING = 60;
+        const COLS = 2;
+        const ROWS = 3;
+        const CELL_W = (A4_WIDTH - (PADDING * (COLS + 1))) / COLS;
+        const CELL_H = (A4_HEIGHT - (PADDING * (ROWS + 1))) / ROWS;
+        const INFO_HEIGHT = 240; // مساحة البيانات المنفصلة
 
         const fileInput = document.getElementById('fileInput');
         const sidebarList = document.getElementById('sidebarList');
@@ -148,30 +157,54 @@
         const exportBtns = document.getElementById('exportBtns');
         const loadingUI = document.getElementById('loadingUI');
         const placeholderText = document.getElementById('placeholderText');
+        const totalCountEl = document.getElementById('totalCount');
 
-        fileInput.addEventListener('change', (e) => {
+        fileInput.addEventListener('change', async (e) => {
             const files = Array.from(e.target.files);
-            let processed = 0;
-            files.forEach(file => {
-                if (!file.type.startsWith('image/')) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
+            if (files.length === 0) return;
+            
+            let addedCount = 0;
+            let skipCount = 0;
+
+            for (const file of files) {
+                if (!file.type.startsWith('image/')) continue;
+                
+                // منع التكرار بناءً على الاسم
+                if (jobList.some(item => item.name === file.name)) {
+                    skipCount++;
+                    continue;
+                }
+
+                try {
+                    const dataUrl = await readFile(file);
                     jobList.push({
                         id: Date.now() + Math.random(),
                         name: file.name,
-                        data: event.target.result,
+                        data: dataUrl,
                         qty: 1,
                         size: ""
                     });
-                    processed++;
-                    if(processed === files.length) renderSidebar();
-                };
-                reader.readAsDataURL(file);
-            });
+                    addedCount++;
+                } catch (err) { console.error(err); }
+            }
+
+            if (addedCount > 0) showToast(`تم إضافة ${addedCount} صورة جديدة`);
+            if (skipCount > 0) showToast(`تخطي ${skipCount} صورة مكررة`);
+            
+            renderSidebar();
             fileInput.value = '';
         });
 
+        function readFile(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
         function renderSidebar() {
+            totalCountEl.innerText = jobList.length;
             if (jobList.length > 0) {
                 emptyState.classList.add('hidden');
                 actionContainer.classList.remove('hidden');
@@ -180,28 +213,26 @@
                 actionContainer.classList.add('hidden');
             }
 
-            sidebarList.innerHTML = jobList.map(item => `
-                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-3 group transition-all hover:border-blue-200">
+            sidebarList.innerHTML = jobList.map((item, index) => `
+                <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-2 group hover:border-blue-300 transition-all">
                     <div class="flex items-center gap-3">
-                        <div class="relative">
-                            <img src="${item.data}" class="w-16 h-16 object-cover rounded-xl border border-slate-100 shadow-sm">
-                            <button onclick="removeJob(${item.id})" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
+                        <img src="${item.data}" class="w-12 h-12 object-cover rounded-lg border border-slate-100">
                         <div class="flex-grow min-w-0">
-                            <p class="text-[11px] font-bold text-slate-500 truncate">${item.name}</p>
-                            <p class="text-[10px] text-blue-500 font-bold">صورة رقم ${jobList.indexOf(item) + 1}</p>
+                            <p class="text-[10px] font-bold text-slate-700 truncate">${item.name}</p>
+                            <p class="text-[9px] text-blue-500 font-bold"># ${index + 1}</p>
                         </div>
+                        <button onclick="removeJob(${item.id})" class="text-red-400 hover:text-red-600 p-1">
+                            <i class="fas fa-trash-alt text-xs"></i>
+                        </button>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-[10px] font-black text-slate-400 block mb-1">الكمية</label>
-                            <input type="number" value="${item.qty}" min="1" onchange="updateJob(${item.id}, 'qty', this.value)" class="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="relative">
+                           <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">كمية:</span>
+                           <input type="number" value="${item.qty}" min="1" onchange="updateJob(${item.id}, 'qty', this.value)" class="w-full bg-slate-50 border-none rounded-lg pr-8 pl-2 py-1 text-xs font-bold outline-none focus:ring-1 focus:ring-blue-500">
                         </div>
-                        <div>
-                            <label class="text-[10px] font-black text-slate-400 block mb-1">القياس (سم)</label>
-                            <input type="text" placeholder="50x70" value="${item.size}" onchange="updateJob(${item.id}, 'size', this.value)" class="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all">
+                        <div class="relative">
+                           <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">قياس:</span>
+                           <input type="text" value="${item.size}" onchange="updateJob(${item.id}, 'size', this.value)" placeholder="---" class="w-full bg-slate-50 border-none rounded-lg pr-8 pl-2 py-1 text-xs font-bold outline-none focus:ring-1 focus:ring-blue-500">
                         </div>
                     </div>
                 </div>
@@ -216,11 +247,11 @@
         function removeJob(id) {
             jobList = jobList.filter(i => i.id !== id);
             renderSidebar();
-            resetView();
+            if (jobList.length === 0) resetView();
         }
 
         function clearItems() {
-            if(confirm("هل أنت متأكد من مسح جميع الصور؟")) {
+            if(confirm("مسح جميع الصور الحالية؟")) {
                 jobList = [];
                 renderSidebar();
                 resetView();
@@ -237,7 +268,9 @@
             if (jobList.length === 0) return;
             loadingUI.classList.remove('hidden');
             
-            const pagesCount = Math.ceil(jobList.length / 4);
+            const perPage = 6;
+            const pagesCount = Math.ceil(jobList.length / perPage);
+            
             canvas.width = A4_WIDTH;
             canvas.height = A4_HEIGHT * pagesCount;
 
@@ -247,64 +280,85 @@
             try {
                 for (let i = 0; i < jobList.length; i++) {
                     const item = jobList[i];
-                    const pageIndex = Math.floor(i / 4);
-                    const itemIndexInPage = i % 4;
-                    const col = itemIndexInPage % 2;
-                    const row = Math.floor(itemIndexInPage / 2);
-                    const startX = PADDING + (col * (CELL_W + PADDING));
-                    const startY = (pageIndex * A4_HEIGHT) + PADDING + (row * (CELL_H + PADDING));
-                    await drawItem(item, startX, startY);
+                    const pageIndex = Math.floor(i / perPage);
+                    const itemIndexInPage = i % perPage;
+                    const col = itemIndexInPage % COLS;
+                    const row = Math.floor(itemIndexInPage / COLS);
+                    
+                    const x = PADDING + (col * (CELL_W + PADDING));
+                    const y = (pageIndex * A4_HEIGHT) + PADDING + (row * (CELL_H + PADDING));
+
+                    await drawItemWithHeader(item, x, y);
                 }
 
                 loadingUI.classList.add('hidden');
                 canvas.classList.remove('hidden');
                 placeholderText.classList.add('hidden');
                 exportBtns.classList.remove('hidden');
-                showToast("تم توليد المعاينة بنجاح");
-            } catch (error) {
-                console.error(error);
+                showToast("تم توليد الوثيقة بنظام 6 صور في الصفحة");
+                canvas.scrollIntoView({ behavior: 'smooth' });
+
+            } catch (err) {
+                console.error(err);
                 loadingUI.classList.add('hidden');
-                showToast("خطأ في معالجة الصور");
+                showToast("حدث خطأ أثناء المعالجة");
             }
         }
 
-        async function drawItem(item, x, y) {
+        async function drawItemWithHeader(item, x, y) {
             const img = await loadImage(item.data);
+            
+            // 1. رسم خلفية الخلية
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(x, y, CELL_W, CELL_H);
+            
+            // 2. رسم خلفية مساحة البيانات (الهيدر)
             ctx.fillStyle = "#f8fafc";
             ctx.beginPath();
-            ctx.roundRect(x, y, CELL_W, INFO_H, 40);
+            ctx.roundRect(x, y, CELL_W, INFO_HEIGHT, 20);
             ctx.fill();
+            ctx.strokeStyle = "#e2e8f0";
+            ctx.lineWidth = 2;
+            ctx.stroke();
 
+            // 3. رسم النصوص (الكمية والقياس)
             ctx.textBaseline = "middle";
+            
+            // الكمية (جهة اليمين)
             ctx.textAlign = "right";
             ctx.fillStyle = "#64748b";
             ctx.font = "bold 45px 'Noto Sans Arabic'";
-            ctx.fillText("الكمية:", x + CELL_W - 60, y + INFO_H/2 - 40);
+            ctx.fillText("الكمية:", x + CELL_W - 50, y + INFO_HEIGHT/2 - 40);
             ctx.fillStyle = "#0f172a";
-            ctx.font = "900 110px 'Noto Sans Arabic'";
-            ctx.fillText(item.qty, x + CELL_W - 60, y + INFO_H/2 + 40);
+            ctx.font = "900 100px 'Noto Sans Arabic'";
+            ctx.fillText(item.qty, x + CELL_W - 50, y + INFO_HEIGHT/2 + 40);
 
+            // القياس (جهة اليسار)
             ctx.textAlign = "left";
             ctx.fillStyle = "#64748b";
             ctx.font = "bold 45px 'Noto Sans Arabic'";
-            ctx.fillText("القياس:", x + 60, y + INFO_H/2 - 40);
+            ctx.fillText("القياس:", x + 50, y + INFO_HEIGHT/2 - 40);
             ctx.fillStyle = "#2563eb";
-            ctx.font = "900 80px 'Noto Sans Arabic'";
+            ctx.font = "900 70px 'Noto Sans Arabic'";
             const sizeDisplay = item.size.replace(/x/g, ' × ') || "---";
-            ctx.fillText(sizeDisplay, x + 60, y + INFO_H/2 + 40);
+            ctx.fillText(sizeDisplay, x + 50, y + INFO_HEIGHT/2 + 40);
 
-            const imgAreaY = y + INFO_H + 40;
-            const imgAreaH = CELL_H - INFO_H - 40;
-            ctx.strokeStyle = "#f1f5f9";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x, imgAreaY, CELL_W, imgAreaH);
-
+            // 4. رسم الصورة في المساحة المتبقية
+            const imgAreaY = y + INFO_HEIGHT + 30;
+            const imgAreaH = CELL_H - INFO_HEIGHT - 30;
+            
             const ratio = Math.min(CELL_W / img.width, imgAreaH / img.height);
             const nw = img.width * ratio;
             const nh = img.height * ratio;
             const nx = x + (CELL_W - nw) / 2;
             const ny = imgAreaY + (imgAreaH - nh) / 2;
+
             ctx.drawImage(img, nx, ny, nw, nh);
+            
+            // إطار خارجي كامل للخلية
+            ctx.strokeStyle = "#f1f5f9";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, CELL_W, CELL_H);
         }
 
         function loadImage(src) {
@@ -316,42 +370,36 @@
         }
 
         function downloadAsPDF() {
-            const pagesCount = Math.ceil(jobList.length / 4);
-            const pdf = new jsPDF({
-                orientation: 'p',
-                unit: 'px',
-                format: [A4_WIDTH, A4_HEIGHT]
-            });
+            const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [A4_WIDTH, A4_HEIGHT] });
+            const pages = Math.ceil(jobList.length / 6);
 
-            for (let i = 0; i < pagesCount; i++) {
+            for (let i = 0; i < pages; i++) {
                 if (i > 0) pdf.addPage([A4_WIDTH, A4_HEIGHT], 'p');
                 const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = A4_WIDTH;
                 tempCanvas.height = A4_HEIGHT;
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCtx.drawImage(canvas, 0, i * A4_HEIGHT, A4_WIDTH, A4_HEIGHT, 0, 0, A4_WIDTH, A4_HEIGHT);
-                const pageData = tempCanvas.toDataURL('image/jpeg', 0.95);
-                pdf.addImage(pageData, 'JPEG', 0, 0, A4_WIDTH, A4_HEIGHT);
+                const tCtx = tempCanvas.getContext('2d');
+                tCtx.drawImage(canvas, 0, i * A4_HEIGHT, A4_WIDTH, A4_HEIGHT, 0, 0, A4_WIDTH, A4_HEIGHT);
+                pdf.addImage(tempCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, A4_WIDTH, A4_HEIGHT);
             }
-            pdf.save(`طلب_إنتاج_${Date.now()}.pdf`);
+            pdf.save(`Fusionner_Images_A4_${Date.now()}.pdf`);
         }
 
         function downloadAsJPG() {
             const link = document.createElement('a');
-            link.download = `وثيقة_إنتاج_${Date.now()}.jpg`;
+            link.download = `Fusionner_Images_A4_${Date.now()}.jpg`;
             link.href = canvas.toDataURL('image/jpeg', 0.9);
             link.click();
-            showToast("جاري تحميل الصورة...");
         }
 
         function showToast(msg) {
             const t = document.getElementById('toast');
             t.innerText = msg;
             t.style.opacity = "1";
-            t.style.transform = "translate(50%, 0)";
+            t.style.transform = "translate(-50%, 0)";
             setTimeout(() => {
                 t.style.opacity = "0";
-                t.style.transform = "translate(50%, 20px)";
+                t.style.transform = "translate(-50%, 20px)";
             }, 3000);
         }
     </script>
