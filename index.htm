@@ -385,11 +385,34 @@
             pdf.save(`Fusionner_Images_A4_${Date.now()}.pdf`);
         }
 
+        // تم التعديل هنا: استخدام toBlob بدلاً من toDataURL لدعم الهواتف
         function downloadAsJPG() {
-            const link = document.createElement('a');
-            link.download = `Fusionner_Images_A4_${Date.now()}.jpg`;
-            link.href = canvas.toDataURL('image/jpeg', 0.9);
-            link.click();
+            showToast("جاري التجهيز للتحميل...");
+            
+            try {
+                canvas.toBlob(function(blob) {
+                    if (!blob) {
+                        showToast("حدث خطأ أثناء معالجة الصورة");
+                        return;
+                    }
+                    
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `Fusionner_Images_A4_${Date.now()}.jpg`;
+                    link.href = url;
+                    
+                    // إلحاق الرابط بـ body ضروري لبعض متصفحات الهاتف (مثل Safari)
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // تنظيف الذاكرة بعد التحميل
+                    setTimeout(() => URL.revokeObjectURL(url), 1500);
+                }, 'image/jpeg', 0.9);
+            } catch (e) {
+                console.error(e);
+                showToast("الرجاء استخدام متصفح أحدث لدعم هذه الميزة");
+            }
         }
 
         function showToast(msg) {
